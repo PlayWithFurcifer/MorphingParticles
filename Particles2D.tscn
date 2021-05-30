@@ -1,0 +1,87 @@
+[gd_scene load_steps=12 format=2]
+
+[ext_resource path="res://BasicParticle.png" type="Texture" id=1]
+[ext_resource path="res://FireParticle.png" type="Texture" id=2]
+
+[sub_resource type="Shader" id=1]
+code = "shader_type canvas_item;
+
+uniform sampler2D lifetimeColorGradient;
+uniform sampler2D overlapGradient;
+uniform sampler2D tex1;
+uniform sampler2D tex2;
+uniform vec2 scroll1 = vec2(0.2, -0.3);
+uniform vec2 scroll2 = vec2(0.1, -0.4);
+uniform float tex2_scale = 0.5;
+uniform float sharpness = 6.0;
+
+void fragment() {
+	float particleSeed = COLOR.r / (COLOR.r + COLOR.b + COLOR.g);
+	
+	float adjustedTime = TIME + particleSeed * 11374.293247;
+	float tex1_intensity = texture(tex1, UV + adjustedTime * scroll1).r;
+	float tex2_intensity = texture(tex2, tex2_scale * (UV + adjustedTime * scroll2)).r;
+	float intensity = tex1_intensity * tex2_intensity;
+	
+	vec4 overlapColor = texture(overlapGradient, vec2(intensity * 3.5));
+	vec4 lifetimeColor = texture(lifetimeColorGradient, vec2(COLOR.a));
+	COLOR = lifetimeColor * overlapColor;
+	COLOR.a *= min(1.0, intensity * sharpness) * texture(TEXTURE, UV).a;
+}"
+
+[sub_resource type="Gradient" id=2]
+offsets = PoolRealArray( 0, 0.162791, 0.263566, 0.348837, 0.565891, 1 )
+colors = PoolColorArray( 0.998535, 0.993634, 0.721598, 0, 1, 0.942017, 0.6875, 1, 0.975098, 0.647526, 0.647526, 1, 0.296875, 0.296875, 0.296875, 1, 0, 0, 0, 1, 0, 0, 0, 0 )
+
+[sub_resource type="GradientTexture" id=3]
+gradient = SubResource( 2 )
+
+[sub_resource type="Gradient" id=4]
+offsets = PoolRealArray( 0, 0.511628, 1 )
+colors = PoolColorArray( 1, 0, 0, 1, 1, 0.899414, 0, 1, 0.994099, 1, 0.644531, 1 )
+
+[sub_resource type="GradientTexture" id=5]
+gradient = SubResource( 4 )
+
+[sub_resource type="ShaderMaterial" id=6]
+shader = SubResource( 1 )
+shader_param/scroll1 = Vector2( -0.244, 0.346 )
+shader_param/scroll2 = Vector2( 0.275, 0.494 )
+shader_param/tex2_scale = 0.5
+shader_param/sharpness = 6.0
+shader_param/lifetimeColorGradient = SubResource( 3 )
+shader_param/overlapGradient = SubResource( 5 )
+shader_param/tex1 = ExtResource( 2 )
+shader_param/tex2 = ExtResource( 2 )
+
+[sub_resource type="Gradient" id=7]
+colors = PoolColorArray( 1, 1, 1, 0, 1, 1, 1, 1 )
+
+[sub_resource type="GradientTexture" id=8]
+gradient = SubResource( 7 )
+
+[sub_resource type="ParticlesMaterial" id=9]
+flag_disable_z = true
+direction = Vector3( 0, -1, 0 )
+spread = 30.0
+gravity = Vector3( 0, 0, 0 )
+initial_velocity = 150.0
+initial_velocity_random = 1.0
+angular_velocity = 30.0
+angular_velocity_random = 1.0
+orbit_velocity = 0.0
+orbit_velocity_random = 0.0
+angle = 720.0
+angle_random = 1.0
+scale_random = 0.05
+color_ramp = SubResource( 8 )
+hue_variation = 1.0
+hue_variation_random = 1.0
+
+[node name="Particles2D" type="Particles2D"]
+modulate = Color( 2, 2, 2, 1 )
+material = SubResource( 6 )
+position = Vector2( 521.285, 303.154 )
+amount = 80
+process_material = SubResource( 9 )
+texture = ExtResource( 1 )
